@@ -18,7 +18,7 @@ There is a [basic skeleton](examples/SkeletonConnector.php) that you can use as 
 
 Basically the bare minimum for a module to be considered "complete" and loadable, it has to follow the following skeleton:
 
-```
+```php
 <?php
 namespace MyToolConnector;
 
@@ -45,7 +45,7 @@ class MyToolConnector extends CommonConnectorTools
 
 Refer to the CakePHP documentation for additional available libraries of the framework that you may wish to use, though as a bare minimum, it is highly recommended to also import HTTP client libraries as well as error handling, for example:
 
-```
+```php
 use Cake\Http\Client;
 use Cake\Http\Exception\NotFoundException;
 use Cake\Http\Exception\MethodNotAllowedException;
@@ -91,7 +91,7 @@ If you would like to avoid large, complex functions, feel free to populate your 
 
 An example for such an extracted private function (the function handling all GET requests in the MISP module):
 
-```
+```php
     private function getData(string $url, array $params): Response
     {
         if (empty($params['connection'])) {
@@ -131,7 +131,7 @@ Reponses to the UI are always returned as an array of parameters, with the actua
 
 ### Index actions
 
-```
+```php
 [
     'type' => 'index',
     'data' => [
@@ -164,7 +164,7 @@ The above would generate an index, with each element in $data being a row in the
 
 If we wanted to add additional functionalities to the index, such as toggles, filters, we could pass those via the `top_bar` key. A common use-case for this is adding a quick search bar, such as the below:
 
-```
+```php
 'top_bar' => [
     'children' => [
         [
@@ -199,7 +199,7 @@ public function organisationsAction(array $params): array
 
 Additionally, the individual fields in the index can be further refined, rather than just offering text representations of the referenced data.
 
-```
+```php
 [
 'name' => 'Criticality',
 'sort' => 'level',
@@ -221,7 +221,7 @@ If you set the `sort` key, then users can sort the index by clicking a column's 
 
 When handling dialogues in the module system, functions have generally two use-cases. GET requests will fetch a form and POST actions will execute the requested action with the passed parameters. To handle both these use-cases, you can simply inspect the request http method such as this:
 
-```
+```php
 if ($params['request']->is(['get'])) {
     // generate form for the user
 } elseif ($params['request']->is(['post'])) {
@@ -233,7 +233,7 @@ if ($params['request']->is(['get'])) {
 
 To generate a form, we use the form factories of cerebrate by parametrising the resuting modal:
 
-```
+```php
 [
 	'data' => [
 	    'title' => __('Fetch organisation'),
@@ -251,7 +251,7 @@ The url key is used to point the action to the destination of where the contents
 
 The above example does not allow for any user set details as it's only a confirmation modal, but you can turn an action into an interactive form by simply adding form fields to it, using the `fields` key nested in the `data` key:
 
-```
+```php
 'fields' => [
         [
             'field' => 'connection_ids',
@@ -283,7 +283,7 @@ Keep in mind, that all configuration and tool connection specific data is contai
 
 For the actual response, we generally return a JSON that contains the request's outcome as well as any data returned in the following format:
 
-```
+```json
 [
     "success": 1,
     "message": "Action completed",
