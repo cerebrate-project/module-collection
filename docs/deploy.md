@@ -25,7 +25,7 @@ The classname has to follow the naming convention, so for the above example, our
 Make sure that your file is readable by the apache user (www-data or apache normally)
 
 ```
-chown www-data /var/www/cerebrate/sc/Lib/custom/local\_tool\_connectors/MyModuleConnector.php
+chown www-data:www-data /var/www/cerebrate/sc/Lib/custom/local\_tool\_connectors/MyModuleConnector.php
 ```
 
 
