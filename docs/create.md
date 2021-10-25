@@ -64,6 +64,8 @@ This is a simplistic function that is required by all modules to be implemented,
 
 Additional functionalities need to be implemented with one public function representing each functionality. These also need to be mapped via the exposedFunctions class.
 
+Exposed functions can always be accessed via `/localTools/action/[local_tool_connection_id]/[action_name]/optional_parameter1/optional_parameter2`
+
 #### Action types
 
 Generally we differentiate between the following functionality types:
@@ -123,10 +125,11 @@ We by default inherit a set of functionalities we can reuse via CommonConnectorT
 - Checking the tool's status
 - Capturing ingested contact database items retrieved from a local tool (organisations, individuals, sharing groups)
 
-### Building responses
+## Building responses
 
 Reponses to the UI are always returned as an array of parameters, with the actual data being contained within the array itself. An example for an index function's representation:
 
+### Index actions
 
 ```
 [
@@ -196,3 +199,81 @@ Additionally, the individual fields in the index can be further refined, rather 
 ```
 
 The above example shows an enum field with a mapped representation using the "array\_lookup\_field" element. For a comprehensive list of elements, refer to your Cerebrate's `/var/www/Cerebrate/templates/genericElements/IndexTable/Fields/` directory.
+
+If you set the `sort` key, then users can sort the index by clicking a column's name. You would need to handle that in your action if you wish for sorting to be available. You can retrieve the selected sorting rules via the passed param array ($params['sort'])
+
+### Form actions
+
+When handling dialogues in the module system, functions have generally two use-cases. GET requests will fetch a form and POST actions will execute the requested action with the passed parameters. To handle both these use-cases, you can simply inspect the request http method such as this:
+
+```
+if ($params['request']->is(['get'])) {
+    // generate form for the user
+} elseif ($params['request']->is(['post'])) {
+    // handle the posted data
+}
+```
+
+#### GET requests
+
+To generate a form, we use the form factories of cerebrate by parametrising the resuting modal:
+
+```
+[
+	'data' => [
+	    'title' => __('Fetch organisation'),
+	    'description' => __('Fetch and create/update organisation ({0}) from MISP.', $params['uuid']),
+	    'submit' => [
+		'action' => $params['request']->getParam('action')
+	    ],
+	    'url' => ['controller' => 'localTools', 'action' => 'action', $params['connection']['id'], 'fetchOrganisationAction', $params['uuid']]
+]
+```
+
+The above is an example from the MISP module's fetchOrganisationAction()'s GET code branch. It will generate a simple confirmation modal.
+
+The url key is used to point the action to the destination of where the contents should be posted. Keep in mind that whilst here we have an example of an action that has a simple GET and POST code branch, you could chain multiple actions and create longer dialogue sequences by POSTing the contents to a different endpoint. 
+
+The above example does not allow for any user set details as it's only a confirmation modal, but you can turn an action into an interactive form by simply adding form fields to it, using the `fields` key nested in the `data` key:
+
+```
+'fields' => [
+        [
+            'field' => 'connection_ids',
+            'type' => 'hidden',
+            'value' => $params['connection_ids']
+        ],
+        [
+            'field' => 'method',
+            'label' => __('Method'),
+            'type' => 'dropdown',
+            'options' => ['GET' => 'GET', 'POST' => 'POST']
+        ],
+	[
+	    'field' => 'url',
+	    'label' => __('Relative URL'),
+	    'type' => 'text',
+	]
+]
+```
+
+The above will create two form fields, a hidden conntetion_ids parameter passed along from the function and a dropdown for the user to set and a text entry field. For the available field elements, have a look at your Form factory's field directory at `/var/www/cerebrate/templates/element/IndexTable/Fields`
+
+
+#### POST requests
+
+For post requests, we most likely will want to comminucate the user request to the local tool, via whichever means we would talk to the tool. The most commonly used way of interacting with a tool would be via the HTTP client.
+
+Keep in mind, that all configuration and tool connection specific data is contained in the $params - so you can retrieve stored data such as the local tool's URL, auth key, etc from there, provided they were correctly configured when encoding the connection.
+
+For the actual response, we generally return a JSON that contains the request's outcome as well as any data returned in the following format:
+
+```
+[
+    "success": 1,
+    "message": "Action completed",
+    "data": ""
+]
+```
+
+
