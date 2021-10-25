@@ -60,7 +60,7 @@ This is a simplistic function that is required by all modules to be implemented,
 - 2: ISSUES
 - 3: ERROR
 
-### Adding functionalities to our 
+### Adding functionalities to our module
 
 Additional functionalities need to be implemented with one public function representing each functionality. These also need to be mapped via the exposedFunctions class.
 
@@ -178,7 +178,22 @@ If we wanted to add additional functionalities to the index, such as toggles, fi
 ],
 ```
 
-This will add a filter text entry on top of our index, which can be accessed in your action by using the passed $params array. The above filter would populate $params['value'] for example (defined by the searchKey).
+This will add a filter text entry on top of our index, which can be accessed in your action by using the passed $params array. The above filter would populate $params['value'] for example (defined by the searchKey) for the argument passed to the function handling the action.
+
+Example of such behavior for the action displaying the list of organisations from a MISP instance
+```php
+public function organisationsAction(array $params): array
+{
+    // `$params['value']` contains the searched value
+    $params['validParams'] = [
+        'limit' => 'limit',
+        'page' => 'page',
+        'quickFilter' => 'searchall'
+    ];
+    $urlParams = h($params['connection']['id']) . '/organisationsAction';
+    $response = $this->getData('/organisations/index', $params);
+// [...]
+```
 
 #### Refining index fields
 
@@ -262,7 +277,7 @@ The above will create two form fields, a hidden conntetion_ids parameter passed 
 
 #### POST requests
 
-For post requests, we most likely will want to comminucate the user request to the local tool, via whichever means we would talk to the tool. The most commonly used way of interacting with a tool would be via the HTTP client.
+For post requests, we most likely will want to communicate the user request to the local tool, via whichever means we would talk to the tool. The most commonly used way of interacting with a tool would be via the HTTP client.
 
 Keep in mind, that all configuration and tool connection specific data is contained in the $params - so you can retrieve stored data such as the local tool's URL, auth key, etc from there, provided they were correctly configured when encoding the connection.
 
